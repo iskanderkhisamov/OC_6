@@ -1,0 +1,120 @@
+# OC
+Лабораторная работа №6  
+Номер группы: 728111  
+Номер зачетки: 1800189
+## В своей виртуальной машине сделать:
+1. выводить информацию об использовании оперативной памяти, периодически и с разными единицами измерения. (скриншоты в отчет)  
+`free`  
+`free -s 2`  
+`free --giga`  
+`free --mega`  
+2. выводить информацию о памяти процессов, и понимать, что означает тот или иной столбец. (скриншоты в отчет)  
+`ps -F`  
+UID - идентификатор пользователя владельца этого процесса  
+PID - идентификационный номер процесса  
+PPID - идентификатор родительского процесса  
+C - количество детей, которые есть у процесса  
+SZ - память потребляемая процессом  
+RSS - это не подкачанная физическая память, используемая процессом  
+PSR - процессор, которому назначен процесс  
+STIME - время, когда процесс был запущен  
+TTY - имя консоли, на которой пользователь выполнил вход  
+TIME - количество времени центрального процессора, которое потребил процесс  
+CMD - имя команды, которая запустила процесс  
+3. переполнение буфера стека с подменой переменной (скриншоты в отчет)  
+```C
+#include <stdio.h>
+int main() {
+  int a = 1;
+  int b = 2;
+  int c = a + b;  
+  printf("\nc = %d", c);
+  int m[2];
+  m[0] = 1;
+  m[1] = 2;
+  m[2] = 5;
+  printf("\nc = %d", c);
+  return 0;
+}
+```
+`gcc -fno-stack-protector task3.c -o task3 && ./task3`  
+4. переполнение стека, определить опытным путем размер стека (скриншоты в отчет)
+Надо менять length.  
+```C
+#include <stdio.h>
+#include <stdlib.h>
+int main() {
+  int length = 2094254;
+  int k[length];
+  for(int i = 0; i < length; i++)
+    k[i] = i;
+  printf("\nStack size: %d bit\n\n", length*32);
+  return 0;
+}
+```
+`gcc task4.c -o task4 && ./task4`  
+5. переполнение буфера кучи с подменой переменной (скриншоты в отчет)
+Надо менять i в цикле.  
+```C
+#include <stdio.h>
+#include <stdlib.h>
+int main() {
+  int *a = (int *)malloc(1);
+  int *b = (int *)malloc(1);
+  int *c = (int *)malloc(1); 
+  a[0] = 1;
+  b[0] = 2;
+  c[0] = a[0] + b[0];
+  printf("\nc = %d\n", c[0]);
+  int *k = (int *)malloc(3);
+  for(int i = 0; i < 33340; i++)
+    k[i] = i;
+  printf("\nc = %d\n", c[0]);
+  return 0;
+}
+```
+`gcc task5.c -o task5 -fno-stack-protector -z execstack -no-pie && ./task5`    
+6. переполнение кучи, определить опытным путем размер кучи (скриншоты в отчет)  
+Надо менять размер size.
+```C
+#include <stdio.h>
+#include <stdlib.h>
+int main() {
+  long size = 3112914248;
+  int *p = (int *)malloc(size);
+  if (p == NULL) {
+    printf("Heap size: %ld bytes\n", size);
+    free(p);
+  } else {
+    printf("The heap is not yet full\n");
+    free(p);
+  }
+  return 0;
+}
+```
+`gcc task6.c -o task6 -fno-stack-protector -z execstack -no-pie && ./task6`  
+7. расширить виртуальную память за счет созданного SWAP раздела (скриншоты в отчет)  
+`sudo dd if=/dev/zero of=v.img bs=1M count=1000`  
+`sudo fdisk v.img`  
+`n`  
+`e`  
+`v`  
+`w`  
+`sudo losetup -Pf --show v.img`  
+`sudo mkswap /dev/loop14p1`  
+`free -h`  
+`swapon --show`  
+`sudo swapon /dev/loop14p1`  
+`swapon --show`  
+8. расширить виртуальную память за счет созданного SWAP файла (на разделе EXT2 или EXT3 или EXT4) (скриншоты в отчет)  
+`sudo fallocate -l 100M /swapfile`  
+`sudo chmod 600 /swapfile`  
+`sudo mkswap /swapfile`  
+`sudo swapon /swapfile`  
+`sudo swapon --shpow`  
+## Что надо изучить
+1. управление памятью  
+2. виртуальная память
+3. swap
+4. страницы
+5. сегменты
